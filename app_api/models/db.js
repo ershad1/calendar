@@ -1,9 +1,7 @@
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var gracefulShutdown;
 var dbURI = 'mongodb://heroku_dsbkc8gg:eko4on4ia90v6qm7akg5dc99c2@ds013495.mlab.com:13495/heroku_dsbkc8gg';
-if (process.env.NODE_ENV === 'production') {
-    dbURI = process.env.MONGOLAB_URI;
-}
 
 mongoose.connect(dbURI,{ useMongoClient: true });
 

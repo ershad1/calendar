@@ -1,18 +1,18 @@
 var express = require('express');
 var router = express.Router();
-var ctrlLocations = require('../controllers/calendar');
-// var ctrlReviews = require('../controllers/reviews');
+var ctrlEvent = require('../controllers/calendar');
 
-router.get('/locations', ctrlLocations.locationsListByDistance);
-router.post('/locations', ctrlLocations.locationsCreate);
-router.get('/locations/:locationid', ctrlLocations.locationsReadOne);
-router.put('/locations/:locationid', ctrlLocations.locationsUpdateOne);
-router.delete('/locations/:locationid', ctrlLocations.locationsDeleteOne);
+// Calling event routes when request first param is event
+router.get('/events', ctrlEvent.getEvents);
 
-// reviews
-// router.post('/locations/:locationid/reviews', ctrlReviews.reviewsCreate);
-// router.get('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviewsReadOne);
-// router.put('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviewsUpdateOne);
-// router.delete('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviewsDeleteOne);
+//Create Event
+router.post('/events', ctrlEvent.createEvent);
+
+//Edit Event
+router.put('/events/:id', ctrlEvent.editEvent);
+
+//Delete Event
+router.delete('/events/:id', ctrlEvent.deleteEvent);
+
 
 module.exports = router;

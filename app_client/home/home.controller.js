@@ -1,55 +1,168 @@
 (function () {
 
-  angular
-    .module('calendarApp')
-    .controller('homeCtrl', homeCtrl);
+    angular
+        .module('calendarApp')
+        .controller('homeCtrl', homeCtrl);
 
-  homeCtrl.$inject = ['$scope', 'calendarData', 'geolocation'];
-  function homeCtrl ($scope, calendarData, geolocation) {
-    // Nasty IE9 redirect hack (not recommended)
-    if (window.location.pathname !== '/') {
-      window.location.href = '/#' + window.location.pathname;
-    }
-    var vm = this;
-    console.log(window.location);
-    vm.pageHeader = {
-      title: 'calendar',
-      strapline: 'Find places to work with wifi near you!'
-    };
-    vm.sidebar = {
-      content: "Looking for wifi and a seat? calendar helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let calendar help you find the place you're looking for."
-    };
-    vm.message = "Checking your location";
+    homeCtrl.$inject = ['$scope', 'socket', '$rootScope', '$http', '$location', '$routeParams'];
 
-    vm.getData = function (position) {
-      var lat = position.coords.latitude,
-          lng = position.coords.longitude;
-      vm.message = "Searching for nearby places";
-      calendarData.locationByCoords(lat, lng)
-        .success(function(data) {
-          vm.message = data.length > 0 ? "" : "No locations found nearby";
-          vm.data = { locations: data };
-          console.log(vm.data);
-        })
-        .error(function (e) {
-          vm.message = "Sorry, something's gone wrong, please try again later";
+    function homeCtrl($scope, socket, $rootScope, $http, $location, $routeParams) {
+        $scope.generateCalendar = function (year, month) {
+            $scope.commonData = {};
+            $scope.event = {title: '', description: ''};
+            var weeks = [];
+            var startWeek = moment([year, month]).startOf('month').week();
+            var endWeek = moment([year, month]).endOf('month').week();
+
+            if (month == 11) {
+                var endWeek = moment([year, month]).subtract((parseInt(year) + 1) - moment().format("Y"), 'Y').endOf('month').week();
+            }
+
+            for (var week = startWeek; week <= endWeek; week++) {
+                weeks.push({
+                    week: week,
+                    days: Array(7).fill(0).map(function (n, i) {
+                        var day = moment([year, month]).week(week).startOf('week').clone().add(n + i, 'day');
+                        return {
+                            "date": day.format("D"),
+                            "month": day.format("M"),
+                            "year": day.format("Y"),
+                            "day": day.format("dddd"),
+                            "events": []
+                        };
+                    })
+                })
+            }
+
+            $scope.commonData.filteredYear = year;
+            $scope.commonData.filteredMonth = month;
+            $scope.commonData.filteredMonthName = moment([year, month]).format("MMMM");
+            $scope.weeks = weeks;
+        };
+
+        // First time call for current month's calendar
+        if ($routeParams.year && $routeParams.month) {
+            $rootScope.currentYear = $routeParams.year;
+            $rootScope.currentMonth = $routeParams.month;
+        }
+        $scope.generateCalendar($rootScope.currentYear, $rootScope.currentMonth);
+        $http.get($rootScope.baseUrl + '/events', {
+            params: {
+                year: $rootScope.currentYear,
+                month: (parseInt($rootScope.currentMonth) + 1)
+            }
+        }).then(function (response) {
+            if (response.data.status == 2000) {
+                for (var i = 0; i < response.data.data.length; i++) {
+                    $scope.weeks[response.data.data[i].weeksIndex].days[response.data.data[i].dayIndex].events.push(response.data.data[i]);
+                }
+            }
         });
-    };
 
-    vm.showError = function (error) {
-      $scope.$apply(function() {
-        vm.message = error.message;
-      });
-    };
+        // Call for next month's calendar
+        $scope.nextMonth = function () {
+            var newDate = moment([$scope.currentYear, $scope.currentMonth]).add(1, 'M');
+            $rootScope.currentYear = newDate.format("Y");
+            $rootScope.currentMonth = newDate.format("M") - 1;
 
-    vm.noGeo = function () {
-      $scope.$apply(function() {
-        vm.message = "Geolocation is not supported by this browser.";
-      });
-    };
+            $location.path('/' + $rootScope.currentYear + '/' + $rootScope.currentMonth).replace();
+        };
 
-    geolocation.getPosition(vm.getData,vm.showError,vm.noGeo);
+        // Call for previous month's calendar
+        $scope.previousMonth = function () {
+            var newDate = moment([$scope.currentYear, $scope.currentMonth]).subtract(1, 'M');
+            $rootScope.currentYear = newDate.format("Y");
+            $rootScope.currentMonth = newDate.format("M") - 1;
 
-  }
+            $location.path('/' + $rootScope.currentYear + '/' + $rootScope.currentMonth).replace();
+        };
 
+        // Call for add event
+        $scope.addEvent = function (year, month, date, weeksIndex, dayIndex) {
+            $scope.event = {title: '', description: ''};
+            $scope.triggeredCell = {year: year, month: month, date: date, weeksIndex: weeksIndex, dayIndex: dayIndex};
+        };
+
+        // Call for save event
+        $scope.saveEvent = function () {
+            $scope.triggeredCell.title = $scope.event.title;
+            $scope.triggeredCell.description = $scope.event.description;
+
+            $http.post($rootScope.baseUrl + '/events', $scope.triggeredCell).then(function (response) {
+                if (response.data.status == 2001) {
+                    $scope.event = {title: '', description: ''};
+                    jQuery('#createEventModal').modal('hide');
+                    $.notify(response.data.message, 'success');
+                    return;
+                }
+                $.notify(response.data.message, 'error');
+            });
+        };
+
+        // Call for view event
+        $scope.viewEvent = function (title, description) {
+            $scope.event = {title: title, description: description};
+        };
+
+        // Call for edit event
+        $scope.editEvent = function (year, month, date, weeksIndex, dayIndex, eventIndex, event_id, title, description) {
+            $scope.event = {title: title, description: description, _id: event_id};
+            $scope.triggeredCell = {
+                year: year,
+                month: month,
+                date: date,
+                weeksIndex: weeksIndex,
+                dayIndex: dayIndex,
+                eventIndex: eventIndex
+            };
+        };
+
+        // Call for update event
+        $scope.updateEvent = function () {
+            $scope.triggeredCell.title = $scope.event.title;
+            $scope.triggeredCell.description = $scope.event.description;
+            $http.put($rootScope.baseUrl + '/events/' + $scope.event._id, $scope.triggeredCell).then(function (response) {
+                if (response.data.status == 2002) {
+                    $scope.event = {title: '', description: ''};
+                    jQuery('#editEventModal').modal('hide');
+                    $.notify(response.data.message, 'success');
+                    return;
+                }
+                $.notify(response.data.message, 'error');
+            });
+        };
+
+        // Call for delete event
+        $scope.deleteEvent = function (weeksIndex, dayIndex, eventIndex, event_id) {
+            if (confirm("Are you sure ?")) {
+                $http.delete($rootScope.baseUrl + '/events/' + event_id, {
+                    params: {
+                        weeksIndex: weeksIndex,
+                        dayIndex: dayIndex,
+                        eventIndex: eventIndex
+                    }
+                }).then(function (response) {
+                    if (response.data.status == 2003) {
+                        $.notify(response.data.message, 'success');
+                        return;
+                    }
+                    $.notify(response.data.message, 'error');
+                });
+            }
+        };
+
+        //Initializing socket
+        socket.on('create_event', function (data) {
+            $scope.weeks[data.weeksIndex].days[data.dayIndex].events.push(data);
+        });
+
+        socket.on('edit_event', function (data) {
+            $scope.weeks[data.weeksIndex].days[data.dayIndex].events[data.eventIndex].title = data.title;
+            $scope.weeks[data.weeksIndex].days[data.dayIndex].events[data.eventIndex].description = data.description;
+        });
+
+        socket.on('delete_event', function (data) {
+            $scope.weeks[data.weeksIndex].days[data.dayIndex].events.splice(data.eventIndex, 1);
+        });
+    }
 })();

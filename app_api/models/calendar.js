@@ -1,18 +1,40 @@
 var mongoose = require('mongoose');
 
-var calendarSchema = new mongoose.Schema({
-    event: {
-        type: String,
-        required: true
-    },
-    start: {
-        type: Date,
-        required: true
-    },
-    end: {
-        type: Date,
-        required: true
-    }
+//Event Schema
+var EventSchema = mongoose.Schema({
+    year: {type: Number},
+    month: {type: Number},
+    date: {type: Number},
+    weeksIndex: {type: Number},
+    dayIndex: {type: Number},
+    title: {type: String},
+    description: {type: String}
 });
 
-mongoose.model('Calendar', calendarSchema);
+var Event = module.exports = mongoose.model('Event', EventSchema);
+
+//Fetching all events
+module.exports.fetchEvents = function(date, callback){
+    Event.find({year: date.year, month: date.month}, callback);
+};
+
+//Creating a new event
+module.exports.createEvent = function(newEvent, callback){
+    newEvent.save(callback);
+};
+
+//Editing an existing Event
+module.exports.editEvent = function(eventData, callback){
+    Event.findById(eventData.id, function (err, event) {
+        event.title = eventData.title;
+        event.description = eventData.description;
+        event.save(callback);
+    });
+};
+
+//Deleting an existing event
+module.exports.deleteEvent = function(eventId, callback){
+    Event.findById(eventId, function (err, event) {
+        event.remove(callback);
+    });
+};
