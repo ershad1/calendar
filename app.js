@@ -26,7 +26,7 @@ var appClientFiles = [
 ];
 var uglified = uglifyJs.minify(appClientFiles, { compress : false });
 
-fs.writeFile('public/javascripts/calendar.app.min.js', uglified.code, function (err){
+fs.writeFile('app_client/lib/javascripts/calendar.app.min.js', uglified.code, function (err){
   if(err) {
     console.log(err);
   } else {
