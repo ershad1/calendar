@@ -15,9 +15,6 @@ This folder is for Rest services
 This folder is for angularjs app. this folder can be copied and used as a front end for other backend tecnologies like
 spring boot.
 
-# public
-
-This folder is for javascript and stylesheet support.
 
 
 # Demo
