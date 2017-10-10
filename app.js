@@ -8,7 +8,7 @@ require('./app_api/models/db');
 var uglifyJs = require("uglify-js");
 var fs = require('fs');
 
-var PORT = process.env.PORT || 3000;
+var port = process.env.PORT || 3000;
 
 var routesApi = require('./app_api/routes/index');
 
@@ -51,7 +51,7 @@ var server = require('http').Server(app);
 //Initializing socket
 var io = require('socket.io').listen(server);
 
-server.listen(PORT,function(){console.log("[SERVER] listening @ port:",PORT);});
+server.listen(port);
 
 //Routes
 app.use('/', routesApi);
