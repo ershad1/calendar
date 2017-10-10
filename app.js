@@ -49,7 +49,7 @@ var server = require('http').Server(app);
 //Initializing socket
 var io = require('socket.io').listen(server);
 
-server.listen(3000);
+server.listen(80);
 
 //Routes
 app.use('/', routesApi);
