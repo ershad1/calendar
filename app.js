@@ -16,7 +16,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'app_server', 'views'));
 app.set('view engine', 'jade');
 
-/*var appClientFiles = [
+var appClientFiles = [
   'app_client/app.js',
   'app_client/home/home.controller.js',
   'app_client/about/about.controller.js',
@@ -32,10 +32,10 @@ fs.writeFile('public/javascripts/calendar.app.min.js', uglified.code, function (
   } else {
     console.log("Script generated and saved:", 'calendar.app.min.js');
   }
-});*/
+});
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
+// app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -44,10 +44,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'app_client')));
 
 //Creating http server
-var server = require('http').createServer(app);
+var server = require('http').Server(app);
 
 //Initializing socket
 var io = require('socket.io').listen(server);
+
+server.listen(3000);
 
 //Routes
 app.use('/', routesApi);
