@@ -20,13 +20,6 @@ spring boot.
 This folder is for javascript and stylesheet support.
 
 
-# Issues
-
-Sockit.io and model update is not currently working. 
-Now you have to refresh manually to see the change.
-
-i will try to fix it later.
-
 # Demo
 
 There is a demo of this app in below link
