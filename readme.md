@@ -23,7 +23,7 @@ There is a demo of this app in below link
 
 https://fierce-beach-20299.herokuapp.com/
 
-
+first download code and go to location.
 
 install the dependencies:
 
@@ -32,3 +32,4 @@ install the dependencies:
 Start the app
 
 `npm start`
+or `nodemon`
