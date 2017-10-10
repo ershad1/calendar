@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 var gracefulShutdown;
-var dbURI = 'mongodb://heroku_dsbkc8gg:eko4on4ia90v6qm7akg5dc99c2@ds013495.mlab.com:13495/heroku_dsbkc8gg';
+var dbURI = 'mongodb://heroku_wd7tvbmv:f778iq76qh67fksqrc74ecsq6n@ds113835.mlab.com:13835/heroku_wd7tvbmv';
 
 mongoose.connect(dbURI,{ useMongoClient: true });
 
