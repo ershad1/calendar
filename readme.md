@@ -24,7 +24,7 @@ This folder is for javascript and stylesheet support.
 
 There is a demo of this app in below link
 
-https://pure-dawn-68794.herokuapp.com
+https://fierce-beach-20299.herokuapp.com/
 
 
 
